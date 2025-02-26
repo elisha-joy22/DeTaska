@@ -1,6 +1,6 @@
 from sqlmodel import Field
 
-from models.base import BaseModel
+from app.models.base import BaseModel
 
 class Project(BaseModel, table=True):
     id: int = Field(default=None, primary_key=True)

@@ -1,7 +1,7 @@
 from sqlmodel import Field, ForeignKey
 
-from models.base import BaseModel
-from models.status import Status
+from app.models.base import BaseModel
+from app.models.status import Status
 
 class Space(BaseModel, table=True):
     id: int = Field(default=None, primary_key=True)
