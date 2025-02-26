@@ -12,4 +12,5 @@ class WorkAssignment(BaseModel):
     expected_end_date: str
     actual_start_date: str = None
     actual_end_date: str = None
-    expected_cost: float = 0.0
+    expected_cost: float 
+    actual_cost: float = 0.0
