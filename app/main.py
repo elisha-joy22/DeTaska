@@ -11,6 +11,7 @@ from app.routers import (
     space,
     work_assignment,
     expense,
+    task,
     task_tracking,
     user,
     admin
@@ -30,6 +31,7 @@ app.include_router(work_type.router)
 app.include_router(space.router)
 app.include_router(work_assignment.router)
 app.include_router(expense.router)
+app.include_router(task.router)
 app.include_router(task_tracking.router)
 app.include_router(user.router)
 app.include_router(admin.router)
