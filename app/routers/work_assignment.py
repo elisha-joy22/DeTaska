@@ -4,11 +4,31 @@ from app.database import get_session
 from app.models.work_assignment import WorkAssignment, WorkAssignmentDependency
 from app.models.status import Status
 
+import datetime
+
 router = APIRouter(prefix="/work-assignments", tags=["Work Assignments"])
+
+
+def calculate_priority(task: WorkAssignment, session: Session):
+    """Calculate priority based on dependencies and deadline urgency."""
+    dependency_count = session.exec(
+        select(WorkAssignmentDependency).where(WorkAssignmentDependency.work_assignment_id == task.id)
+    ).count()
+
+    # Urgency factor: Closer the deadline, the higher the priority
+    days_remaining = (task.expected_end_date - datetime.now()).days
+    urgency_factor = max(1, 30 - days_remaining)  # More urgent if closer to today
+
+    # Priority formula (Lower value = Higher priority)
+    priority_score = dependency_count * 2 + urgency_factor
+
+    return priority_score
+
 
 
 @router.post("/", response_model=WorkAssignment)
 def create_work_assignment(work_assignment: WorkAssignment, session: Session = Depends(get_session)):
+    work_assignment.priority = calculate_priority(work_assignment, session)
     session.add(work_assignment)
     session.commit()
     session.refresh(work_assignment)
@@ -16,9 +36,9 @@ def create_work_assignment(work_assignment: WorkAssignment, session: Session = D
 
 
 @router.get("/", response_model=list[WorkAssignment])
-def get_work_assignments(session: Session = Depends(get_session)):
-    work_assignments = session.exec(select(WorkAssignment)).all()
-    return work_assignments
+def get_work_assignments_sorted(session: Session = Depends(get_session)):
+    tasks = session.exec(select(WorkAssignment).order_by(WorkAssignment.priority)).all()
+    return tasks
 
 # Get Work Assignment by ID
 @router.get("/{work_assignment_id}", response_model=WorkAssignment)

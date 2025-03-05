@@ -24,6 +24,7 @@ class WorkAssignment(BaseModel):
     expected_cost: float 
     actual_cost: float = 0.0
     status: str = Field(default=Status.PENDING)
+    priority: int = Field(default=0)
 
     checklist_items: [ChecklistItem] = Relationship(back_populates="work_assignment")
     dependencies: List["WorkAssignmentDependency"] = Relationship(
