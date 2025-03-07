@@ -1,4 +1,4 @@
-from sqlmodel import Field, ForeignKey
+from sqlmodel import Field, ForeignKey, Relationship
 
 from app.models.base import BaseModel
 from app.models.status import Status
@@ -10,3 +10,5 @@ class TaskTracking(BaseModel, table=True):
     status: str = Field(default=Status.PENDING) 
     assigned_person: str = None
     notes: str = None
+
+    checklist_item:"ChecklistItem"=Relationship(back_populates="task_tracking")

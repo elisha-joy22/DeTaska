@@ -1,7 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from app.database import get_session
+
 from app.models.task_tracking import TaskTracking
+from app.models.checklist import ChecklistItem
+from app.models.work_assignment import WorkAssignment
+from app.models.status import Status
 
 router = APIRouter(prefix="/task-tracking", tags=["Task Tracking"])
 
@@ -34,14 +38,28 @@ def update_task_tracking(task_tracking_id: int, updated_task_tracking: TaskTrack
     if not task:
         raise HTTPException(status_code=404, detail="Task Tracking entry not found")
 
-    task.work_assignment_id = updated_task_tracking.work_assignment_id
-    task.checklist_item_id = updated_task_tracking.checklist_item_id
+    # Update task tracking entry
     task.status = updated_task_tracking.status
-    task.assigned_person = updated_task_tracking.assigned_person
-    task.notes = updated_task_tracking.notes
-
     session.add(task)
+    
+    # Update Checklist Item Status
+    checklist_item = session.get(ChecklistItem, task.checklist_item_id)
+    if checklist_item:
+        checklist_item.status = updated_task_tracking.status
+        session.add(checklist_item)
+
     session.commit()
+
+    # Check if all checklist items are completed
+    work_assignment = session.get(WorkAssignment, task.work_assignment_id)
+    if work_assignment:
+        checklist_items = session.exec(select(ChecklistItem).where(ChecklistItem.work_assignment_id == work_assignment.id)).all()
+        
+        if all(item.status == Status.COMPLETED for item in checklist_items if item.is_mandatory):
+            work_assignment.status = Status.COMPLETED
+            session.add(work_assignment)
+            session.commit()
+
     session.refresh(task)
     return task
 
