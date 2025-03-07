@@ -3,6 +3,7 @@ from sqlmodel import Session, select
 from app.database import get_session
 from app.models.work_assignment import WorkAssignment, WorkAssignmentDependency
 from app.models.status import Status
+from app.services.notification_service import NotificationService
 
 import datetime
 
@@ -136,7 +137,18 @@ def start_work_assignment(work_assignment_id: int, session: Session = Depends(ge
     work_assignment.status = Status.IN_PROGRESS
     session.add(work_assignment)
     session.commit()
+
+    # Send notification
+    NotificationService.send_notification(
+        session, 
+        work_assignment.assigned_user_id, 
+        f"Task {work_assignment.id} has started.", 
+        "TASK_STARTED"
+    )
+
     return {"message": "Task started successfully"}
+
+
 
 
 @router.delete("/{work_assignment_id}/dependencies/{depends_on_id}")
@@ -155,3 +167,25 @@ def remove_dependency(work_assignment_id: int, depends_on_id: int, session: Sess
     session.delete(dependency)
     session.commit()
     return {"message": "Dependency removed successfully"}
+
+
+@router.post("/{work_assignment_id}/assign/{user_id}")
+def assign_task(work_assignment_id: int, user_id: int, session: Session = Depends(get_session)):
+    """Assign a user to a task and notify them."""
+    work_assignment = session.get(WorkAssignment, work_assignment_id)
+    if not work_assignment:
+        raise HTTPException(status_code=404, detail="Work Assignment not found")
+
+    work_assignment.assigned_user_id = user_id
+    session.add(work_assignment)
+    session.commit()
+
+    # Send notification
+    NotificationService.send_notification(
+        session, 
+        user_id, 
+        f"You have been assigned to task {work_assignment_id}", 
+        "TASK_ASSIGNED"
+    )
+
+    return {"message": "Task assigned successfully"}
