@@ -51,12 +51,17 @@ def update_task_tracking(task_tracking_id: int, updated_task_tracking: TaskTrack
 
         session.commit()
 
-        # Check if all checklist items are completed
+        # Check if all mandatory checklist items are completed
         work_assignment = session.get(WorkAssignment, task.work_assignment_id)
         if work_assignment:
-            checklist_items = session.exec(select(ChecklistItem).where(ChecklistItem.work_assignment_id == work_assignment.id)).all()
-            
-            if all(item.status == Status.COMPLETED for item in checklist_items if item.is_mandatory):
+            mandatory_items = session.exec(
+                select(ChecklistItem).where(
+                    (ChecklistItem.work_assignment_id == work_assignment.id) & 
+                    (ChecklistItem.is_mandatory == True) 
+                )
+            ).all()
+
+            if all(item.status == Status.COMPLETED for item in mandatory_items):
                 work_assignment.status = Status.COMPLETED
                 session.add(work_assignment)
                 session.commit()
