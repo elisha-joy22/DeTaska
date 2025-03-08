@@ -10,17 +10,19 @@ from app.services.task_service import adjust_task_priority
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
 # Create a Task
-@router.post("/")
-async def create_task(task: Task, session: Session = Depends(get_session)):
+@router.post("/", response_model=Task)
+def create_task(task: Task, session: Session = Depends(get_session)):
     session.add(task)
     session.commit()
     session.refresh(task)
     return task
 
 # Get All Tasks
-@router.get("/")
-async def get_tasks(session: Session = Depends(get_session)):
-    return session.exec(select(Task)).all()
+@router.get("/", response_model=list[Task])
+def get_tasks(session: Session = Depends(get_session)):
+    tasks = session.exec(select(Task)).all()
+    return tasks
+
 
 # Get Task by ID
 @router.get("/{task_id}")
