@@ -56,17 +56,24 @@ def update_task_status(task_id: int, status: Status, session: Session = Depends(
 
 
 # Assign Task to a User
-@router.patch("/{task_id}/assign")
-async def assign_task(task_id: int, user_id: int, session: Session = Depends(get_session)):
+@router.patch("/{task_id}/assign/{user_id}")
+def assign_task(task_id: int, user_id: int, session: Session = Depends(get_session)):
     task = session.get(Task, task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
-    
-    task.assigned_to = user_id
+
+    # Validate if user exists
+    user = session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    task.assigned_user_id = user_id
     session.add(task)
     session.commit()
-    session.refresh(task)
-    return {"message": f"Task assigned to user {user_id}"}
+
+    return {"message": f"Task {task_id} assigned to User {user_id} successfully"}
+
+
 
 
 
