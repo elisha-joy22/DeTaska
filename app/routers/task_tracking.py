@@ -38,30 +38,35 @@ def update_task_tracking(task_tracking_id: int, updated_task_tracking: TaskTrack
     if not task:
         raise HTTPException(status_code=404, detail="Task Tracking entry not found")
 
-    # Update task tracking entry
-    task.status = updated_task_tracking.status
-    session.add(task)
-    
-    # Update Checklist Item Status
-    checklist_item = session.get(ChecklistItem, task.checklist_item_id)
-    if checklist_item:
-        checklist_item.status = updated_task_tracking.status
-        session.add(checklist_item)
-
-    session.commit()
-
-    # Check if all checklist items are completed
-    work_assignment = session.get(WorkAssignment, task.work_assignment_id)
-    if work_assignment:
-        checklist_items = session.exec(select(ChecklistItem).where(ChecklistItem.work_assignment_id == work_assignment.id)).all()
+    try:
+        # Update task tracking entry
+        task.status = updated_task_tracking.status
+        session.add(task)
         
-        if all(item.status == Status.COMPLETED for item in checklist_items if item.is_mandatory):
-            work_assignment.status = Status.COMPLETED
-            session.add(work_assignment)
-            session.commit()
+        # Update Checklist Item Status
+        checklist_item = session.get(ChecklistItem, task.checklist_item_id)
+        if checklist_item:
+            checklist_item.status = updated_task_tracking.status
+            session.add(checklist_item)
 
-    session.refresh(task)
-    return task
+        session.commit()
+
+        # Check if all checklist items are completed
+        work_assignment = session.get(WorkAssignment, task.work_assignment_id)
+        if work_assignment:
+            checklist_items = session.exec(select(ChecklistItem).where(ChecklistItem.work_assignment_id == work_assignment.id)).all()
+            
+            if all(item.status == Status.COMPLETED for item in checklist_items if item.is_mandatory):
+                work_assignment.status = Status.COMPLETED
+                session.add(work_assignment)
+                session.commit()
+
+        session.refresh(task)
+        return task
+
+    except Exception as e:
+        session.rollback()  # Rollback in case of failure
+        raise HTTPException(status_code=500, detail=f"Update failed: {str(e)}")
 
 
 @router.delete("/{task_tracking_id}")
