@@ -6,6 +6,7 @@ from app.models.task import Task, TaskStatus
 from app.models.work_assignment import WorkAssignment
 from app.dependencies import get_current_user
 from app.services.task_service import adjust_task_priority
+from app.models.status import Status
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
@@ -33,22 +34,26 @@ async def get_task(task_id: int, session: Session = Depends(get_session)):
     return task
 
 # Update Task Status
-@router.patch("/{task_id}/status")
-async def update_task_status(task_id: int, status: TaskStatus, session: Session = Depends(get_session)):
+@router.put("/{task_id}/status")
+def update_task_status(task_id: int, status: Status, session: Session = Depends(get_session)):
     task = session.get(Task, task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
-    
+
     task.status = status
-    if status == TaskStatus.IN_PROGRESS:
-        task.actual_start = datetime.utcnow()
-    elif status == TaskStatus.COMPLETED:
-        task.actual_end = datetime.utcnow()
-    
+
+    # Ensure we don't override existing start or end timestamps
+    if status == Status.IN_PROGRESS and not task.actual_start:
+        task.actual_start = datetime.utcnow()  # Only set if it's not already recorded
+
+    elif status == Status.COMPLETED and not task.actual_end:
+        task.actual_end = datetime.utcnow()  # Only set if it's not already recorded
+
     session.add(task)
     session.commit()
     session.refresh(task)
-    return {"message": f"Task status updated to {status.value}"}
+    return task
+
 
 # Assign Task to a User
 @router.patch("/{task_id}/assign")
