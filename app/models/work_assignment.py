@@ -33,7 +33,7 @@ class WorkAssignment(BaseModel):
     actual_end_date: str = None
     expected_cost: float 
     actual_cost: float = 0.0
-    status: str = Field(default=Status.PENDING)
+    status: Status = Field(default=Status.PENDING)
     priority: int = Field(default=0)
 
     category: Optional[TaskCategory] = Relationship(back_populates="work_assignments")
