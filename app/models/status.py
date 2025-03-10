@@ -6,6 +6,7 @@ class Status(str, Enum):
     COMPLETED = "Completed"
     CANCELLED = "Cancelled"
     NOT_STARTED = "Not Started"
+    BLOCKED = "Blocked"
 
     @classmethod
     def list(cls):

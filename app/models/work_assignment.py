@@ -1,6 +1,7 @@
 from sqlmodel import SQLModel,Field, ForeignKey, Relationship
 from typing import List, Optional
 from datetime import datetime
+from pydantic import field_validator, model_validator
 
 from app.models.base import BaseModel, BaseModelWithTimestamps
 from app.models.status import Status
@@ -13,6 +14,7 @@ class TaskCategory(SQLModel, table=True):
     name: str = Field(unique=True, index=True)
     description: Optional[str] = None
 
+    work_assignments:List["WorkAssignment"] = Relationship(back_populates="category")
 
 class WorkAssignmentDependency(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
@@ -47,4 +49,17 @@ class WorkAssignment(BaseModel, BaseModelWithTimestamps):
     )
 
 
-TaskCategory.work_assignments = Relationship(back_populates="category")
+    @model_validator(mode="before")
+    def validate_dates(cls, values):
+        expected_start = values.get("expected_start_date")
+        expected_end = values.get("expected_end_date")
+        actual_start = values.get("actual_start_date")
+        actual_end = values.get("actual_end_date")
+
+        if expected_start and expected_end and expected_start > expected_end:
+            raise ValueError("Expected end date must be after expected start date")
+
+        if actual_start and actual_end and actual_start > actual_end:
+            raise ValueError("Actual end date must be after actual start date")
+
+        return values
