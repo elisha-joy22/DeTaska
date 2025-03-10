@@ -24,8 +24,8 @@ class WorkAssignmentDependency(SQLModel, table=True):
 
 class WorkAssignment(BaseModel, BaseModelWithTimestamps):
     id: Optional[int] = Field(default=None, primary_key=True)
-    project_id: int = Field(ForeignKey("project.id"))
-    work_type_id: int = Field(ForeignKey("work_type.id"))
+    project_id: int = Field(ForeignKey("project.id"),nullable=False)
+    work_type_id: int = Field(ForeignKey("work_type.id"),nullable=False)
     space_id: int = Field(ForeignKey("space.id"))
     category_id: Optional[int] = Field(default=None, foreign_key="taskcategory.id")
     order: int = Field(default=1)
@@ -38,6 +38,7 @@ class WorkAssignment(BaseModel, BaseModelWithTimestamps):
     status: Status = Field(default=Status.NOT_STARTED)
     priority: int = Field(default=0)
 
+    work_type: Optional["WorkType"] = Relationship(back_populates="work_assignments", sa_relationship_kwargs={"cascade": "all, delete"})
     category: Optional[TaskCategory] = Relationship(back_populates="work_assignments")
     checklist_items: [ChecklistItem] = Relationship(back_populates="work_assignment")
     dependencies: List["WorkAssignmentDependency"] = Relationship(
