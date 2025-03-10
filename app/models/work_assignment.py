@@ -28,13 +28,13 @@ class WorkAssignment(BaseModel):
     space_id: int = Field(ForeignKey("space.id"))
     category_id: Optional[int] = Field(default=None, foreign_key="taskcategory.id")
     order: int = Field(default=1)
-    expected_start_date: Optional[datetime] = Field(default=None)  # Can be null
+    expected_start_date: Optional[datetime] = Field(default=None) 
     expected_end_date: Optional[datetime] = Field(default=None)  
     actual_start_date: Optional[datetime] = Field(default=None)
     actual_end_date: Optional[datetime] = Field(default=None)
     created_at: datetime = Field(default_factory=datetime.utcnow) 
-    expected_cost: float 
-    actual_cost: float = 0.0
+    expected_cost: Optional[float] = Field(default=0.0, ge=0) 
+    actual_cost: Optional[float] = Field(default=0.0, ge=0)
     status: Status = Field(default=Status.PENDING)
     priority: int = Field(default=0)
 
