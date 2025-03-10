@@ -1,5 +1,6 @@
 from sqlmodel import SQLModel,Field, ForeignKey, Relationship
 from typing import List, Optional
+from datetime import datetime
 
 from app.models.base import BaseModel
 from app.models.status import Status
@@ -27,10 +28,11 @@ class WorkAssignment(BaseModel):
     space_id: int = Field(ForeignKey("space.id"))
     category_id: Optional[int] = Field(default=None, foreign_key="taskcategory.id")
     order: int = Field(default=1)
-    expected_start_date: str
-    expected_end_date: str
-    actual_start_date: str = None
-    actual_end_date: str = None
+    expected_start_date: Optional[datetime] = Field(default=None)  # Can be null
+    expected_end_date: Optional[datetime] = Field(default=None)  
+    actual_start_date: Optional[datetime] = Field(default=None)
+    actual_end_date: Optional[datetime] = Field(default=None)
+    created_at: datetime = Field(default_factory=datetime.utcnow) 
     expected_cost: float 
     actual_cost: float = 0.0
     status: Status = Field(default=Status.PENDING)
