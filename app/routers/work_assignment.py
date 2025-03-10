@@ -51,10 +51,16 @@ def get_work_assignment(work_assignment_id: int, session: Session = Depends(get_
 
 
 @router.put("/{work_assignment_id}", response_model=WorkAssignment)
-def update_work_assignment(work_assignment_id: int, updated_work_assignment: WorkAssignment, session: Session = Depends(get_session)):
+def update_work_assignment(
+    work_assignment_id: int,
+    updated_work_assignment: WorkAssignment,
+    session: Session = Depends(get_session)
+):
     work_assignment = session.get(WorkAssignment, work_assignment_id)
     if not work_assignment:
         raise HTTPException(status_code=404, detail="Work Assignment not found")
+
+    old_end_date = work_assignment.expected_end_date
 
     work_assignment.project_id = updated_work_assignment.project_id
     work_assignment.work_type_id = updated_work_assignment.work_type_id
@@ -66,6 +72,9 @@ def update_work_assignment(work_assignment_id: int, updated_work_assignment: Wor
     work_assignment.actual_end_date = updated_work_assignment.actual_end_date
     work_assignment.expected_cost = updated_work_assignment.expected_cost
     work_assignment.actual_cost = updated_work_assignment.actual_cost
+
+    if work_assignment.expected_end_date != old_end_date:
+        work_assignment.priority = calculate_priority(work_assignment, session)
 
     session.add(work_assignment)
     session.commit()
