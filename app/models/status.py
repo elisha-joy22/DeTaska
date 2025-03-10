@@ -1,10 +1,11 @@
 from enum import Enum
 
-class Status():
-    PENDING = "PENDING"
-    IN_PROGRESS = "IN_PROGRESS"
-    COMPLETED = "COMPLETED"
-    CANCELLED = "CANCELLED"
+class Status(str, Enum):
+    PENDING = "Pending"
+    IN_PROGRESS = "In Progress"
+    COMPLETED = "Completed"
+    CANCELLED = "Cancelled"
+    NOT_STARTED = "Not Started"
 
     @classmethod
     def list(cls):
