@@ -1,6 +1,8 @@
 from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional
 from datetime import datetime
+
+from app.models.base import BaseModel, BaseModelWithTimestamps
 from app.models.user import User
 from app.models.project import Project
 from app.models.space import Space
@@ -12,7 +14,7 @@ class TaskStatus(str, Enum):
     COMPLETED = "completed"
 
 
-class Task(SQLModel, table=True):
+class Task(BaseModel,BaseModelWithTimestamps, table=True):
     id: int = Field(default=None, primary_key=True)
     name: str = Field(nullable=False)
     description: Optional[str] = None

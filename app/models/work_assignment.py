@@ -2,9 +2,10 @@ from sqlmodel import SQLModel,Field, ForeignKey, Relationship
 from typing import List, Optional
 from datetime import datetime
 
-from app.models.base import BaseModel
+from app.models.base import BaseModel, BaseModelWithTimestamps
 from app.models.status import Status
 from app.models.checklist import ChecklistItem
+
 
 
 class TaskCategory(SQLModel, table=True):
@@ -21,7 +22,7 @@ class WorkAssignmentDependency(SQLModel, table=True):
 
 
 
-class WorkAssignment(BaseModel):
+class WorkAssignment(BaseModel, BaseModelWithTimestamps):
     id: Optional[int] = Field(default=None, primary_key=True)
     project_id: int = Field(ForeignKey("project.id"))
     work_type_id: int = Field(ForeignKey("work_type.id"))
@@ -32,7 +33,6 @@ class WorkAssignment(BaseModel):
     expected_end_date: datetime = Field(default_factory=datetime.utcnow) 
     actual_start_date: datetime | None = Field(default=None)  
     actual_end_date: datetime | None = Field(default=None)
-    created_at: datetime = Field(default_factory=datetime.utcnow) 
     expected_cost: Optional[float] = Field(default=0.0, ge=0) 
     actual_cost: Optional[float] = Field(default=0.0, ge=0)
     status: Status = Field(default=Status.NOT_STARTED)
