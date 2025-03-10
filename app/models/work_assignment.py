@@ -14,8 +14,8 @@ class TaskCategory(SQLModel, table=True):
 
 class WorkAssignmentDependency(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
-    work_assignment_id: int = Field(foreign_key="workassignment.id", index=True)
-    depends_on_id: int = Field(foreign_key="workassignment.id", index=True)
+    work_assignment_id: int = Field(foreign_key="workassignment.id", index=True, sa_column_kwargs={"ondelete": "CASCADE"} )
+    depends_on_id: int = Field(foreign_key="workassignment.id", index=True, sa_column_kwargs={"ondelete": "CASCADE"})
 
 
 
