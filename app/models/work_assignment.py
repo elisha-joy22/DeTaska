@@ -13,8 +13,11 @@ class TaskCategory(SQLModel, table=True):
 
 
 class WorkAssignmentDependency(SQLModel, table=True):
-    work_assignment_id: int = Field(ForeignKey("workassignment.id"), primary_key=True)
-    depends_on_id: int = Field(ForeignKey("workassignment.id"), primary_key=True)
+    id: int = Field(default=None, primary_key=True)
+    work_assignment_id: int = Field(foreign_key="workassignment.id", index=True)
+    depends_on_id: int = Field(foreign_key="workassignment.id", index=True)
+
+
 
 
 class WorkAssignment(BaseModel):
